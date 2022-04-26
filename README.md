@@ -6,5 +6,12 @@ COVID-19/2019-nCoV 新型冠状病毒实时爬虫，采用Go，gocolly，goquery
 
 ## 部署
 - git clone到本地
-- service/db.go中配置数据库
 
+- 创建数据库2019-nCov，分别创建 Time-series Collection:"Overall, Province, Abroad, Timeline"，timefield = "updateTime"
+
+- service/db.go中配置数据库
+```go
+const URI = "mongodb://localhost:27017"
+const DATABASE = "2019-nCov"
+```
+- $run main.go 启动服务
