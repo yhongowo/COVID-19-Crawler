@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 )
 
 /*
@@ -23,7 +24,18 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
+	//Create Database and Time-series Collections
 	db = client.Database(DATABASE)
+	tso := options.TimeSeries().SetTimeField("updateTime").SetGranularity("hours")
+	opts := options.CreateCollection().SetTimeSeriesOptions(tso)
+	err = db.CreateCollection(context.TODO(), "Overall", opts)
+	err = db.CreateCollection(context.TODO(), "Abroad", opts)
+	err = db.CreateCollection(context.TODO(), "Province", opts)
+	err = db.CreateCollection(context.TODO(), "Timeline", opts)
+	if err != nil {
+		log.Println("Collections created")
+	}
+
 	// Ping the primary
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		panic(err)

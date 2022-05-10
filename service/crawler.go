@@ -14,16 +14,17 @@ func Run() {
 
 	//Register callback function
 	c.OnRequest(func(request *colly.Request) {
+		log.Println("")
 		log.Println("Start Crawler...")
 	})
 	c.OnResponse(func(response *colly.Response) {
 		NewParser(response.Body).Run()
 	})
 	c.OnError(func(response *colly.Response, err error) {
-		log.Println("[ERROR]", err)
+		log.Println(err)
 	})
 	c.OnScraped(func(response *colly.Response) {
-		log.Println("Stop Crawler...")
+		log.Println("Crawler sleep...")
 	})
 	//Start Collector
 	if err := c.Visit(WebsiteURI); err != nil {
