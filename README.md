@@ -14,3 +14,4 @@ const DATABASE = "2019-nCov"
 ```
 - $run main.go 启动服务
 - 也可以在release中下载exe文件试运行
+- 
