@@ -9,14 +9,13 @@ import (
 	"log"
 )
 
-/*
-	MongoDB configuration
-*/
-const URI = "mongodb://localhost:27017"
+const URI = ""
 const DATABASE = "2019-nCov"
 
-var client *mongo.Client
-var db *mongo.Database
+var (
+	client *mongo.Client
+	db     *mongo.Database
+)
 
 func InitDB() {
 	var err error
@@ -24,16 +23,13 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
-	//Create Database and Time-series Collections
 	db = client.Database(DATABASE)
-	tso := options.TimeSeries().SetTimeField("updateTime").SetGranularity("hours")
-	opts := options.CreateCollection().SetTimeSeriesOptions(tso)
-	err = db.CreateCollection(context.TODO(), "Overall", opts)
-	err = db.CreateCollection(context.TODO(), "Abroad", opts)
-	err = db.CreateCollection(context.TODO(), "Province", opts)
-	err = db.CreateCollection(context.TODO(), "Timeline", opts)
+	err = db.CreateCollection(context.TODO(), "Overall")
+	err = db.CreateCollection(context.TODO(), "Abroad")
+	err = db.CreateCollection(context.TODO(), "Area")
+	err = db.CreateCollection(context.TODO(), "Timeline")
 	if err != nil {
-		log.Println("Collections created")
+		log.Println(err)
 	}
 
 	// Ping the primary
@@ -41,10 +37,4 @@ func InitDB() {
 		panic(err)
 	}
 	fmt.Println("Successfully connected and pinged.")
-}
-
-func CloseDB() {
-	if err := client.Disconnect(context.TODO()); err != nil {
-		panic(err)
-	}
 }

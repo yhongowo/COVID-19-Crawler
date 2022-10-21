@@ -1,12 +1,15 @@
 package service
 
 import (
+	"COVID-19-Crawler/util"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
 	"regexp"
@@ -17,13 +20,13 @@ import (
 type Parser struct {
 	sync.WaitGroup
 	bodyData  []byte
-	timestamp time.Time
+	timestamp int64
 }
 
 func NewParser(bodyData []byte) *Parser {
 	return &Parser{
 		bodyData:  bodyData,
-		timestamp: time.Now().UTC(),
+		timestamp: time.Now().Unix(),
 	}
 }
 
@@ -120,7 +123,9 @@ func (p *Parser) overallParser(data string) {
 	delete(overallInfo, "deleted")
 	overallInfo["updateTime"] = p.timestamp
 	//持久化
-	_, err = db.Collection("Overall").InsertOne(context.TODO(), overallInfo)
+	filter := bson.D{{"updateTime", bson.D{{"$gte", util.TodayBeginTime()}}}}
+	opts := options.Replace().SetUpsert(true)
+	_, err = db.Collection("Overall").ReplaceOne(context.TODO(), filter, overallInfo, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,12 +141,19 @@ func (p *Parser) provinceParser(data string) {
 
 	for i := 0; i < len(areas); i++ {
 		areas[i]["updateTime"] = p.timestamp
-		_, err := db.Collection("Province").InsertOne(context.TODO(), areas[i])
+		filter := bson.D{
+			{"$and",
+				bson.A{
+					bson.D{{"updateTime", bson.D{{"$gte", util.TodayBeginTime()}}}},
+					bson.D{{"provinceName", areas[i]["provinceName"]}}},
+			},
+		}
+		opts := options.Replace().SetUpsert(true)
+		_, err := db.Collection("Area").ReplaceOne(context.TODO(), filter, areas[i], opts)
 		if err != nil {
 			return
 		}
 	}
-
 	saveAsJson("area", data)
 }
 
@@ -163,8 +175,16 @@ func (p *Parser) abroadParser(data string) {
 		delete(countries[i], "provinceShortName")
 
 		countries[i]["updateTime"] = p.timestamp
-		//TODO INSERT
-		_, err := db.Collection("Abroad").InsertOne(context.TODO(), countries[i])
+
+		filter := bson.D{
+			{"$and",
+				bson.A{
+					bson.D{{"updateTime", bson.D{{"$gte", util.TodayBeginTime()}}}},
+					bson.D{{"provinceName", countries[i]["provinceName"]}}},
+			},
+		}
+		opts := options.Replace().SetUpsert(true)
+		_, err := db.Collection("Abroad").ReplaceOne(context.TODO(), filter, countries[i], opts)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -178,10 +198,12 @@ func (p *Parser) timelinesParser(data string) {
 	if err := json.Unmarshal([]byte(data), &timelines); err != nil {
 		log.Fatal(err)
 	}
-	//TODO INSERT
 	for i := 0; i < len(timelines); i++ {
 		timelines[i]["updateTime"] = p.timestamp
-		_, err := db.Collection("Timeline").InsertOne(context.TODO(), timelines[i])
+
+		filter := bson.D{{"articleId", timelines[i]["articleId"]}}
+		opts := options.Replace().SetUpsert(true)
+		_, err := db.Collection("Timeline").ReplaceOne(context.TODO(), filter, timelines[i], opts)
 		if err != nil {
 			log.Fatal(err)
 		}
