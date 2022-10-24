@@ -24,4 +24,5 @@ gen
 # vendor/
 
 /tmp/*
+/service/db.go
 

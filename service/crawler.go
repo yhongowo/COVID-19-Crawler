@@ -14,7 +14,7 @@ func Run() {
 
 	//Register callback function
 	c.OnRequest(func(request *colly.Request) {
-		log.Println("Start Crawler...")
+		log.Println("Crawler running...")
 	})
 	c.OnResponse(func(response *colly.Response) {
 		NewParser(response.Body).Run()
@@ -23,7 +23,7 @@ func Run() {
 		log.Println(err)
 	})
 	c.OnScraped(func(response *colly.Response) {
-		log.Println("Crawler sleep...\r")
+		log.Println("Successfully Crawled!")
 	})
 	//Start Collector
 	if err := c.Visit(WebsiteURI); err != nil {

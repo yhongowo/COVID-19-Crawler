@@ -36,4 +36,5 @@ func init() {
 	}
 	out := io.MultiWriter(logfile, os.Stdout)
 	log.SetOutput(out)
+	log.SetPrefix("[Crawler] ")
 }

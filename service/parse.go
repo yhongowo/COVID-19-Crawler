@@ -30,7 +30,7 @@ func NewParser(bodyData []byte) *Parser {
 	}
 }
 
-func saveAsJson(name string, data string) {
+func SaveAsJson(name string, data string) {
 	//make dir
 	if _, err := os.Stat("tmp"); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir("tmp", os.ModePerm)
@@ -63,7 +63,6 @@ func (p *Parser) Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Document length =", len(doc.Text()))
 
 	//solve overall
 	p.Add(1)
@@ -105,11 +104,9 @@ func (p *Parser) Run() {
 	}()
 
 	p.Wait()
-	log.Println("Successfully crawled!")
 }
 
 func (p *Parser) overallParser(data string) {
-	log.Println("OverallParser running, len =", len(data))
 	data = data[:len(data)-1]
 	overallInfo := make(map[string]interface{})
 	err := json.Unmarshal([]byte(data), &overallInfo)
@@ -129,11 +126,11 @@ func (p *Parser) overallParser(data string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	saveAsJson("overallInfo", data)
+	SaveAsJson("overallInfo", data)
+	log.Println("Save overall info")
 }
 
 func (p *Parser) provinceParser(data string) {
-	log.Println("AreaParser running, len =", len(data))
 	var areas []map[string]interface{}
 	if err := json.Unmarshal([]byte(data), &areas); err != nil {
 		log.Fatal(err)
@@ -154,11 +151,12 @@ func (p *Parser) provinceParser(data string) {
 			return
 		}
 	}
-	saveAsJson("area", data)
+	SaveAsJson("area", data)
+	log.Printf("Save province info,rows:%d", len(areas))
+
 }
 
 func (p *Parser) abroadParser(data string) {
-	log.Println("AbroadParser running, len =", len(data))
 	var countries []map[string]interface{}
 	if err := json.Unmarshal([]byte(data), &countries); err != nil {
 		log.Fatal(err)
@@ -189,11 +187,11 @@ func (p *Parser) abroadParser(data string) {
 			log.Fatal(err)
 		}
 	}
-	saveAsJson("abroad", data)
+	SaveAsJson("abroad", data)
+	log.Printf("Save abroad info,rows:%d", len(countries))
 }
 
 func (p *Parser) timelinesParser(data string) {
-	log.Println("TimelineParser running, len =", len(data))
 	var timelines []map[string]interface{}
 	if err := json.Unmarshal([]byte(data), &timelines); err != nil {
 		log.Fatal(err)
@@ -208,5 +206,6 @@ func (p *Parser) timelinesParser(data string) {
 			log.Fatal(err)
 		}
 	}
-	saveAsJson("timelines", data)
+	SaveAsJson("timelines", data)
+	log.Printf("Save timeline info,rows:%d", len(timelines))
 }
